@@ -1,20 +1,19 @@
-
 import 'package:flutter/material.dart';
 
 //import 'package:location/location.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:weatherapp/constants/nav_constants.dart';
-import 'package:weatherapp/constants/str_constants.dart';
-import 'package:weatherapp/navigation/customroute.dart';
+import '../constants/nav_constants.dart';
+import '../constants/str_constants.dart';
+import '../navigation/customroute.dart';
 
 Future<void> main() async {
   await Hive.initFlutter();
   //debugPrint("hi");
-  await Hive.deleteBoxFromDisk(StrConstants.cities);
+  //await Hive.deleteBoxFromDisk(StrConstants.cities);
   await Hive.openBox(StrConstants.cities);
   //debugPrint("hello");
-  Box cityBox = Hive.box(StrConstants.cities);
+  //Box cityBox = Hive.box(StrConstants.cities);
   // cityBox.add({
   //   "name": "Canberra",
   //   "region": "Australian Capital Territory",

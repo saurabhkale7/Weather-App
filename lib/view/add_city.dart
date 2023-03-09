@@ -3,6 +3,7 @@ import '../constants/constant_widgets.dart';
 import '../constants/nav_constants.dart';
 import '../constants/str_constants.dart';
 import 'package:country_state_city_picker/country_state_city_picker.dart';
+import '../controller/methods.dart';
 import '../model/result.dart';
 
 class AddCity extends StatefulWidget {
@@ -13,9 +14,9 @@ class AddCity extends StatefulWidget {
 }
 
 class _AddCityState extends State<AddCity> {
-  String countryValue="";
-  String stateValue="";
-  String cityValue="";
+  String countryValue = "";
+  String stateValue = "";
+  String cityValue = "";
 
   @override
   Widget build(BuildContext context) {
@@ -23,34 +24,37 @@ class _AddCityState extends State<AddCity> {
       backgroundColor: commonBackgroundColor,
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.black),
-        title: Text(StrConstants.addCity, style: titleBlackFontStyle,),
+        title: Text(
+          StrConstants.addCity,
+          style: titleBlackFontStyle,
+        ),
         backgroundColor: Colors.white,
       ),
-      body:
-      Container(
+      body: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           height: 600,
-          child:
-          Column(
+          child: Column(
             children: [
               SelectState(
                 // style: TextStyle(color: Colors.red),
                 onCountryChanged: (value) {
                   setState(() {
                     countryValue = value;
+                    stateValue = "";
+                    cityValue = "";
                   });
                 },
-                onStateChanged:(value) {
+                onStateChanged: (value) {
                   setState(() {
                     stateValue = value;
+                    cityValue = "";
                   });
                 },
-                onCityChanged:(value) {
+                onCityChanged: (value) {
                   setState(() {
                     cityValue = value;
                   });
                 },
-
               ),
               // InkWell(
               //   onTap:(){
@@ -61,8 +65,7 @@ class _AddCityState extends State<AddCity> {
               //   child: Text(' Check')
               // )
             ],
-          )
-      ),
+          )),
       floatingActionButton: TextButton(
         //backgroundColor: Colors.white,
         style: ButtonStyle(
@@ -72,13 +75,31 @@ class _AddCityState extends State<AddCity> {
           //elevation: MaterialStatePropertyAll(50),
         ),
         child: Text(StrConstants.addCity, style: headerStyle),
-        onPressed: () {
-          if(cityValue.isEmpty){
-            openDialog(context, const Result(msg: StrConstants.info, desc: StrConstants.provideData));
+        onPressed: () async {
+          if (countryValue.isEmpty) {
+            openDialog(
+                context,
+                const Result(
+                    msg: StrConstants.info, desc: StrConstants.provideData));
             return;
           }
 
-          Navigator.of(context).pushReplacementNamed(NavConstants.cityPage, arguments: cityValue);
+          if (!await isDeviceWithInternet()) {
+            (() => openDialog(
+                context,
+                const Result(
+                    msg: StrConstants.internet,
+                    desc: StrConstants.noInternet)))();
+
+            return;
+          }
+
+          () {
+            Navigator.of(context).pushReplacementNamed(NavConstants.newCityPage,
+                arguments: cityValue.isEmpty
+                    ? (stateValue.isEmpty ? countryValue : stateValue)
+                    : cityValue);
+          }();
         },
       ),
     );

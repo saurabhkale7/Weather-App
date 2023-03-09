@@ -1,14 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:weatherapp/constants/str_constants.dart';
+import '../constants/str_constants.dart';
 import 'dart:core';
 
 class CityWeatherDatabase {
   static CityWeatherDatabase cityWeatherDBObj = CityWeatherDatabase();
   late final Box cityBox = Hive.box(StrConstants.cities);
-
-  //CityWeatherDatabase() {}
 
   List<Map<String, String>> getFavouriteCities() {
     List<Map<String, String>> cityList = [];
@@ -23,11 +21,12 @@ class CityWeatherDatabase {
 
         cityList.add(c);
       }
-      //ages.where((int age) => age >= 18)
 
       cityList = cityList.where((Map<String, String> city) => city[StrConstants
           .isFavourite]?.compareTo(StrConstants.yes) == 0)
           .toList();
+
+      debugPrint("in get fav cities = ${cityBox.values.length}");
     }
 
     return cityList.reversed.toList();
@@ -37,7 +36,6 @@ class CityWeatherDatabase {
     List<Map<String, String>> cityList = [];
 
     if (cityBox.values.isNotEmpty) {
-      //String s = cast<String>(x);
 
       for (Map<dynamic, dynamic> city in cityBox.values) {
         Map<String, String> c = {};
@@ -48,6 +46,8 @@ class CityWeatherDatabase {
 
         cityList.add(c);
       }
+
+      debugPrint("in get recent cities = ${cityBox.values.length}");
 
       if (cityList.length <= 10) {
         return cityList.reversed.toList();
@@ -61,7 +61,6 @@ class CityWeatherDatabase {
 
   Future<void> createItem(Map<String, String> newItem) async {
     await cityBox.add(newItem);
-    //_refreshItems(); // update the UI
   }
 
   Map<String, dynamic> readItem(Box box, int key) {
@@ -71,7 +70,6 @@ class CityWeatherDatabase {
 
   Future<void> updateItem(int itemKey, Map<String, String> item) async {
     await cityBox.put(itemKey, item);
-    //_refreshItems(); // Update the UI
   }
 
   void updateFavourites(List<Map<String, String>> cityList) {
@@ -79,8 +77,9 @@ class CityWeatherDatabase {
       for (int key in cityBox.keys) {
         Map<dynamic, dynamic> city = cityBox.get(key);
 
-        if (city[StrConstants.locKeys[0]].toString().compareTo(
-            cityData[StrConstants.locKeys[0]]!) == 0) {
+        if (city[StrConstants.locKeys[0]].toString().toLowerCase().compareTo(
+            cityData[StrConstants.locKeys[0]]!.toLowerCase()) == 0 && city[StrConstants.isFavourite].toString().compareTo(StrConstants.yes)==0) {
+          debugPrint("in update favs");
           updateItem(key, cityData);
         }
       }
@@ -109,8 +108,9 @@ class CityWeatherDatabase {
       for (int key in cityBox.keys) {
         Map<dynamic, dynamic> city = cityBox.get(key);
 
-        if (city[StrConstants.locKeys[0]].toString().compareTo(
-            cityData[StrConstants.locKeys[0]]!) == 0) {
+        if (city[StrConstants.locKeys[0]].toString().toLowerCase().compareTo(
+            cityData[StrConstants.locKeys[0]]!.toLowerCase()) == 0 && city[StrConstants.isFavourite].toString().compareTo(StrConstants.yes)!=0) {
+          debugPrint("in update recents");
           updateItem(key, cityData);
         }
       }
@@ -128,18 +128,32 @@ class CityWeatherDatabase {
   }
 
   Future<void> deleteItem(String cityName) async {
+    debugPrint("Citybox keys length = ${cityBox.keys.length}");
+
     if (cityBox.keys.isNotEmpty) {
-      for (Map<dynamic, dynamic> city in cityBox.values) {
-        for (var key in city.keys) {
-          debugPrint(city[key].toString());
-          if (key.toString().compareTo(StrConstants.locKeys[0]) == 0 &&
-              city[key].toString().toLowerCase().compareTo(
-                  cityName.toLowerCase()) == 0) {
-            await cityBox.delete(key);
-            break;
-          }
+
+      for(int mainKey in cityBox.keys){
+        Map<dynamic, dynamic> city = cityBox.get(mainKey);
+
+        if(city[StrConstants.locKeys[0]].toString().toLowerCase().compareTo(cityName.toLowerCase())==0){
+          //city[StrConstants.isFavourite].toString().compareTo(StrConstants.yes)==0
+
+          debugPrint("In if of delete item");
+          await cityBox.delete(mainKey);
         }
       }
+
+      // for (Map<dynamic, dynamic> city in cityBox.values) {
+      //   for (String key in city.keys) {
+      //     debugPrint(city[key].toString());
+      //     if (key.toString().compareTo(StrConstants.locKeys[0]) == 0 &&
+      //         city[key].toString().toLowerCase().compareTo(
+      //             cityName.toLowerCase()) == 0) {
+      //       debugPrint("In if of delete item");
+      //       await cityBox.delete(key);
+      //     }
+      //   }
+      // }
     }
   }
 }

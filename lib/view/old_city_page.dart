@@ -6,11 +6,11 @@ import '../constants/str_constants.dart';
 import '../model/database.dart';
 
 class OldCityPage extends StatefulWidget {
-  const OldCityPage({Key? key, required this.city}) : super(key: key);
-  final Map<String, String> city;
+  const OldCityPage({Key? key, required this.cityData}) : super(key: key);
+  final Map<String, String> cityData;
 
   @override
-  State<OldCityPage> createState() => _OldCityPageState(cityData: city);
+  State<OldCityPage> createState() => _OldCityPageState(cityData: cityData);
 }
 
 class _OldCityPageState extends State<OldCityPage> {
@@ -37,7 +37,7 @@ class _OldCityPageState extends State<OldCityPage> {
         .deleteItem(cityData[StrConstants.locKeys[0]]!);
     CityWeatherDatabase.cityWeatherDBObj.createItem(cityData);
 
-    if (cityData[StrConstants.isFavourite]?.compareTo(StrConstants.yes) ==
+    if (cityData[StrConstants.isFavourite]!.compareTo(StrConstants.yes) ==
         0) {
       favIcon.value = Icon(
         Icons.favorite,
@@ -48,7 +48,7 @@ class _OldCityPageState extends State<OldCityPage> {
       favIcon.value = Icon(
         Icons.favorite_border,
         color: Colors.red,
-        size: MediaQuery.of(context).size.height,
+        size: heightPadding,
       );
     }
 
@@ -78,229 +78,7 @@ class _OldCityPageState extends State<OldCityPage> {
                   child: Padding(
                     padding:
                     EdgeInsets.only(left: widthPadding, right: widthPadding),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                                child: Text(
-                                  cityData[StrConstants.locKeys[0]]!,
-                                  style: titleWhiteFontStyle,
-                                )),
-                            ValueListenableBuilder(
-                                valueListenable: favIcon,
-                                builder: (context, value, widget) {
-                                  return IconButton(
-                                      onPressed: () {
-                                        //debugPrint("in onpressed");
-                                        if (value.icon == Icons.favorite_border) {
-                                          //debugPrint("in fav border");
-                                          favIcon.value = Icon(
-                                            Icons.favorite,
-                                            color: Colors.red,
-                                            size: heightPadding,
-                                          );
-                                          CityWeatherDatabase.cityWeatherDBObj
-                                              .deleteItem(cityData[
-                                          StrConstants.locKeys[0]]!);
-                                          cityData[StrConstants.isFavourite] =
-                                              StrConstants.yes;
-                                          CityWeatherDatabase.cityWeatherDBObj
-                                              .createItem(cityData);
-                                        } else {
-                                          //debugPrint("in fav");
-                                          favIcon.value = Icon(
-                                            Icons.favorite_border,
-                                            color: Colors.red,
-                                            size: heightPadding,
-                                          );
-                                          CityWeatherDatabase.cityWeatherDBObj
-                                              .deleteItem(cityData[
-                                          StrConstants.locKeys[0]]!);
-                                          cityData[StrConstants.isFavourite] =
-                                              StrConstants.no;
-                                          CityWeatherDatabase.cityWeatherDBObj
-                                              .createItem(cityData);
-                                        }
-                                      },
-                                      icon: value
-                                  );
-                                }),
-                          ],
-                        ),
-                        Text(
-                          cityData[StrConstants.locKeys[1]]! +
-                              StrConstants.separator +
-                              cityData[StrConstants.locKeys[2]]!,
-                          style: regionCountryFontStyle,
-                        ),
-                        sizedBoxH20,
-
-                        Text(
-                          cityData[StrConstants.currentKeys[2]]! +
-                              StrConstants.separator +
-                              cityData[StrConstants.currentKeys[0]]! +
-                              StrConstants.degCelsius,
-                          style: tempFontStyle,
-                        ),
-                        sizedBoxH20,
-
-                        getImage(context, cityData[StrConstants.currentKeys[2]]!),
-                        sizedBoxH20,
-
-                        //GridView.extent(maxCrossAxisExtent: maxCrossAxisExtent)
-
-                        Row(
-                          children: [
-                            Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Center(
-                                      child: Text(
-                                        StrConstants.realFeel,
-                                        style: headerStyle,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Center(
-                                      child: Text(
-                                        cityData[StrConstants.currentKeys[8]]! +
-                                            StrConstants.degCelsius,
-                                        style: contentStyle,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(
-                              width: size.width * 30 / 100,
-                            ),
-                            Column(
-                              children: [
-                                Center(
-                                  child: Text(
-                                    StrConstants.humidity,
-                                    style: headerStyle,
-                                  ),
-                                ),
-                                Center(
-                                  child: Text(
-                                      cityData[StrConstants.currentKeys[6]]! +
-                                          StrConstants.percentage,
-                                      style: contentStyle),
-                                ),
-                              ],
-                            )
-                          ],
-                        ),
-                        sizedBoxH20,
-
-                        Row(
-                          children: [
-                            Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Center(
-                                      child: Text(
-                                        StrConstants.chancesOfRain,
-                                        style: headerStyle,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Center(
-                                      child: Text(
-                                        cityData[StrConstants.currentKeys[7]]! +
-                                            StrConstants.percentage,
-                                        style: contentStyle,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(
-                              width: size.width * 10 / 100,
-                            ),
-                            Column(
-                              children: [
-                                Center(
-                                  child: Text(
-                                    StrConstants.pressure,
-                                    style: headerStyle,
-                                  ),
-                                ),
-                                Center(
-                                  child: Text(
-                                      cityData[StrConstants.currentKeys[5]]! +
-                                          StrConstants.mbar,
-                                      style: contentStyle),
-                                ),
-                              ],
-                            )
-                          ],
-                        ),
-                        sizedBoxH20,
-
-                        Row(
-                          children: [
-                            Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Center(
-                                      child: Text(
-                                        StrConstants.windSpeed,
-                                        style: headerStyle,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Center(
-                                      child: Text(
-                                        cityData[StrConstants.currentKeys[4]]! +
-                                            StrConstants.kph,
-                                        style: contentStyle,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(
-                              width: size.width * 20 / 100,
-                            ),
-                            Column(
-                              children: [
-                                Center(
-                                  child: Text(
-                                    StrConstants.uv,
-                                    style: headerStyle,
-                                  ),
-                                ),
-                                Center(
-                                  child: Text(
-                                      cityData[StrConstants.currentKeys[9]]!,
-                                      style: contentStyle),
-                                ),
-                              ],
-                            )
-                          ],
-                        ),
-                        sizedBoxH20,
-                      ],
-                    ),
+                    child: getWeatherWidget(context, cityData, favIcon, size, heightPadding),
                   ),
                 ),
         ),

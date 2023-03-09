@@ -1,14 +1,17 @@
 import 'package:flutter/foundation.dart';
-import 'package:weatherapp/api/api.dart';
-import 'package:weatherapp/controller/methods.dart';
-import 'package:weatherapp/model/api_reponse.dart';
-import 'package:weatherapp/model/database.dart';
+import '../api/api.dart';
+import '../controller/methods.dart';
+import '../model/api_reponse.dart';
+import '../model/database.dart';
 import '../constants/str_constants.dart';
 
 final API weatherApiObj = API.apiObj;
-List<Map<String, String>> cityList=[];
+List<Map<String, String>> favCitiesList=[];
+List<Map<String, String>> recentCitiesList=[];
 
 Future<APIResponse> createCitiesResponse(bool isFav) async {
+  List<Map<String, String>> cityList = isFav?favCitiesList:recentCitiesList;
+
   //when no records are there
   if (cityList.isEmpty) {
     return APIResponse(
@@ -31,7 +34,7 @@ Future<APIResponse> createCitiesResponse(bool isFav) async {
     //bool isIncorrectResponse=false;
 
     for (Map<String, String> city in cityList) {
-      //pass city name to getWeatherAt() method and fetch data for today only so true
+      //pass city name to getWeatherAt() method and fetch data only for today so true
       weatherApiResponse = await compute(
           weatherApiObj.getWeatherAt, [city[StrConstants.locKeys[0]], true]);
 
@@ -43,14 +46,14 @@ Future<APIResponse> createCitiesResponse(bool isFav) async {
             data: cityList);
       }
 
-      weatherApiResponse.data[0][StrConstants.isFavourite] = StrConstants.yes;
+      weatherApiResponse.data[0][StrConstants.isFavourite] = (isFav?StrConstants.yes:city[StrConstants.isFavourite])!;
       newCityList.add(weatherApiResponse.data[0]);
     }
 
     if(isFav) {
       CityWeatherDatabase.cityWeatherDBObj.updateFavourites(newCityList.reversed.toList());
     } else{
-      CityWeatherDatabase.cityWeatherDBObj.updateRecent(newCityList);
+      CityWeatherDatabase.cityWeatherDBObj.updateRecent(newCityList.reversed.toList());
     }
 
     return APIResponse(
@@ -68,7 +71,7 @@ class FavouriteCitiesProvider extends ChangeNotifier {
     areFavouriteCitiesLoading = true;
     notifyListeners();
 
-    cityList = CityWeatherDatabase.cityWeatherDBObj.getFavouriteCities();
+    favCitiesList = CityWeatherDatabase.cityWeatherDBObj.getFavouriteCities();
     favouriteCitiesResponse = await createCitiesResponse(true);
 
     areFavouriteCitiesLoading = false;
@@ -84,7 +87,7 @@ class RecentCitiesProvider extends ChangeNotifier {
     areRecentCitiesLoading = true;
     notifyListeners();
 
-    cityList = CityWeatherDatabase.cityWeatherDBObj.getRecentCities();
+    recentCitiesList = CityWeatherDatabase.cityWeatherDBObj.getRecentCities();
     recentCitiesResponse = await createCitiesResponse(false);
 
     areRecentCitiesLoading = false;
@@ -107,7 +110,12 @@ class LocationDataProvider extends ChangeNotifier {
 
     weatherApiResponse =
     await compute(weatherApiObj.getWeatherAt, [location, daysEqualTo1]);
-    CityWeatherDatabase.cityWeatherDBObj.deleteItem(weatherApiResponse.data[0][StrConstants.locKeys[0]]!);
+
+    // if(weatherApiResponse.msg.compareTo(StrConstants.success)==0) {
+    //   CityWeatherDatabase.cityWeatherDBObj.deleteItem(
+    //   weatherApiResponse.data[0][StrConstants.locKeys[0]]!);
+    //   weatherApiResponse.data[0][StrConstants.isFavourite] = StrConstants.no;
+    // }
 
     isLoading = false;
     notifyListeners();
@@ -124,8 +132,12 @@ class MainCityDataProvider extends ChangeNotifier {
 
     weatherApiResponse =
     await compute(weatherApiObj.getWeatherAt, [location, daysEqualTo1]);
-    CityWeatherDatabase.cityWeatherDBObj.deleteItem(weatherApiResponse.data[0][StrConstants.locKeys[0]]!);
-    weatherApiResponse.data[0][StrConstants.isFavourite]=StrConstants.no;
+
+    if(weatherApiResponse.msg.compareTo(StrConstants.success)==0) {
+      CityWeatherDatabase.cityWeatherDBObj
+          .deleteItem(weatherApiResponse.data[0][StrConstants.locKeys[0]]!);
+      weatherApiResponse.data[0][StrConstants.isFavourite] = StrConstants.no;
+    }
 
     isLoading = false;
     notifyListeners();

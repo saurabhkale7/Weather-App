@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:weatherapp/view/old_city_page.dart';
+import '../view/old_city_page.dart';
 import '../state_management/weather_provider.dart';
 
 import '../constants/nav_constants.dart';
@@ -33,20 +33,17 @@ class CustomRoute {
       case NavConstants.addCityPage:
         return MaterialPageRoute(builder: (_) => const AddCity());
 
-      case NavConstants.cityPage:
+      case NavConstants.newCityPage:
         return MaterialPageRoute(
-          builder: (_) => MultiProvider(
-            providers: [
-              ChangeNotifierProvider(
-                  create: (context) => MainCityDataProvider()),
-            ],
-            child: NewCityPage(cityName: (settings.arguments as String)),
-          ),
+          builder: (_) => ChangeNotifierProvider(
+                  create: (context) => MainCityDataProvider(),
+                  child: NewCityPage(cityName: (settings.arguments as String)),
+              ),
         );
 
       case NavConstants.oldCityPage:
         return MaterialPageRoute(
-          builder: (_) => OldCityPage(city: (settings.arguments as Map<String, String>)),
+          builder: (_) => OldCityPage(cityData: (settings.arguments as Map<String, String>)),
         );
 
 

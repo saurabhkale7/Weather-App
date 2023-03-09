@@ -40,7 +40,6 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   provider: ^6.0.5
-  connectivity_plus: ^2.0.2
   country_state_city_picker: ^1.2.8
 
 dev_dependencies:

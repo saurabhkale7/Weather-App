@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:weatherapp/constants/api_constants.dart';
-import 'package:weatherapp/constants/str_constants.dart';
-import 'package:weatherapp/model/api_reponse.dart';
+import '../constants/api_constants.dart';
+import '../constants/str_constants.dart';
+import '../model/api_reponse.dart';
 import 'package:http/http.dart' as http;
 
 class API {
@@ -42,13 +42,13 @@ class API {
   }
 
 
-  /// Function to get weather data of a location
+  /// [getWeatherAt] is function to get weather data of a location
   /// It fetches data and sends it to the calling method
   /// if any error occurs or receives empty data then it sends corresponding
   /// message to the calling method
   Future<APIResponse> getWeatherAt(final li) async {
     String location=li[0];
-    bool daysEqualTo1=li[1];
+    bool daysEqualTo1= li[1];
 
     //create url to get weather data of a particular location
     //and for today or for next five days(including today)
@@ -91,7 +91,8 @@ class API {
         //final v = dict["location"] as Map<String, dynamic>;
         //final v1 = v["region"] as String;
         //debugPrint(v1);
-      } else {
+      }
+      else {
 
         //if status code is not 200
         //means if we didn't receive data that we want
@@ -100,30 +101,30 @@ class API {
             desc: StrConstants.tryAgain +
                 StrConstants.statusCode +
                 weatherDataResponse.statusCode.toString(),
-            data: [{}]);
+            data: []);
       }
     }
     on FormatException catch(e){
       return APIResponse(
           msg: StrConstants.error,
           desc: StrConstants.invalid +e.toString(),
-          data: [{}]);
+          data: []);
     }on SocketException catch(e){
       return APIResponse(
           msg: StrConstants.error,
           desc: StrConstants.noInternet + e.toString(),
-          data: [{}]);
+          data: []);
     }on TimeoutException catch(e){
       return APIResponse(
           msg: StrConstants.error,
           desc: StrConstants.serverTimeout + e.toString(),
-          data: [{}]);
+          data: []);
     }
     catch (e) {
       return APIResponse(
           msg: StrConstants.error,
           desc: StrConstants.tryAgain + e.toString(),
-          data: [{}]);
+          data: []);
     }
   }
 }

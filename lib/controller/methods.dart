@@ -1,8 +1,9 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:weatherapp/constants/str_constants.dart';
+import '../constants/str_constants.dart';
 
 import '../constants/constant_widgets.dart';
 import '../model/api_reponse.dart';
@@ -12,7 +13,7 @@ Future<bool> isDeviceWithInternet() async {
   bool activeConnection = false;
 
   try {
-    final List<InternetAddress> result = await InternetAddress.lookup('google.com');
+    final List<InternetAddress> result = await InternetAddress.lookup(StrConstants.googleWebPage);
     if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
       activeConnection = true;
     }
@@ -79,7 +80,7 @@ Future<Result> determinePosition() async {
       desc : "${currentPosition.latitude},${currentPosition.longitude}");
 }
 
-Widget getActualData(BuildContext context, APIResponse citiesResponse){
+Widget getActualData(BuildContext context, APIResponse citiesResponse, bool isFav){
   if (citiesResponse.msg
       .compareTo(StrConstants.info) ==
       0) {
@@ -89,7 +90,7 @@ Widget getActualData(BuildContext context, APIResponse citiesResponse){
           Expanded(
               child: Center(
                 child: Text(
-                  StrConstants.noFavCities,
+                  isFav?StrConstants.noFavCities:StrConstants.noRecentCities,
                   style: noDataFontStyle,
                 ),
               )),
@@ -98,19 +99,8 @@ Widget getActualData(BuildContext context, APIResponse citiesResponse){
     }
 
     //when data is not empty but internet connection is not there
-    // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-    //   content: Align(
-    //     alignment: Alignment.topRight,
-    //     child: Text(
-    //       StrConstants.conWithInternet,
-    //       style: snackBarStyle,
-    //     ),
-    //   ),
-    //   backgroundColor: Colors.white,
-    //   duration: const Duration(seconds: 4),
-    // ));
 
-    WidgetsBinding.instance.addPostFrameCallback((_){
+    Timer(const Duration(), () async {
       openDialog(context, Result(msg: citiesResponse.desc, desc: StrConstants.conWithInternet));
     });
 
@@ -119,7 +109,11 @@ Widget getActualData(BuildContext context, APIResponse citiesResponse){
 
   else if(citiesResponse.msg
       .compareTo(StrConstants.success)!=0){
-    openDialog(context, Result(msg: citiesResponse.msg, desc: citiesResponse.desc));
+    Timer(const Duration(), () async {
+      openDialog(
+          context, Result(msg: citiesResponse.msg, desc: citiesResponse.desc));
+    });
+
     return Row(
       children: [
         Expanded(

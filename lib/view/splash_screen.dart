@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
-import '../constants/constant_widgets.dart';
 import '../constants/nav_constants.dart';
 import '../constants/str_constants.dart';
 
@@ -53,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen>
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Container(
-        color: Colors.blueGrey,
+        color: Colors.orangeAccent,
         child: Image.asset(
           StrConstants.images[7],
           width: MediaQuery.of(context).size.width,

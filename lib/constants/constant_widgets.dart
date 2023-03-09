@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:weatherapp/constants/nav_constants.dart';
-import 'package:weatherapp/constants/str_constants.dart';
+import 'nav_constants.dart';
+import 'str_constants.dart';
 
+import '../model/database.dart';
 import '../model/result.dart';
 import 'font_constants.dart';
 
@@ -94,9 +95,10 @@ SizedBox sizedBoxH20 = const SizedBox(
   height: 20,
 );
 
-void openDialog(BuildContext context, Result r) async {
+Future<void> openDialog(BuildContext context, Result r) async{
   showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(
@@ -109,7 +111,9 @@ void openDialog(BuildContext context, Result r) async {
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
                 child: const Text(StrConstants.ok)),
           ],
         );
@@ -123,17 +127,12 @@ TextStyle tileTitleStyle = const TextStyle(
   fontFamily: FontConstants.raleway,
 );
 
-TextStyle tileSubtitleStyle = const TextStyle(
-  color: Colors.white,
-  fontSize: 20,
-  fontFamily: FontConstants.junge,
-);
+TextStyle tileSubtitleStyle = contentStyle;
 
 Padding getListTile(BuildContext context, Map<String, String> locData) {
   return Padding(
     padding: const EdgeInsets.only(top: 5, bottom: 5),
     child: ListTile(
-
       //name of location
       title: Text(
         locData[StrConstants.locKeys[0]]!,
@@ -150,8 +149,9 @@ Padding getListTile(BuildContext context, Map<String, String> locData) {
       visualDensity: commonVisualDensity,
       shape: roundRectBorder,
       tileColor: Colors.transparent,
-      onTap: (){
-        Navigator.of(context).pushNamed(NavConstants.oldCityPage, arguments: locData);
+      onTap: () {
+        Navigator.of(context)
+            .pushNamed(NavConstants.oldCityPage, arguments: locData);
       },
     ),
   );
@@ -167,63 +167,290 @@ ListView getListView(List<Map<String, String>> cityList) {
 }
 
 Center getImage(context, String condition1) {
-  String condition=condition1.toLowerCase();
+  String condition = condition1.toLowerCase();
+  double width = MediaQuery.of(context).size.width * 40 / 100;
+  double height = MediaQuery.of(context).size.height * 40 / 100;
 
-  if (condition.contains("cloud") || condition.contains("overcast")) {
+  if (condition.contains(StrConstants.cloud) ||
+      condition.contains(StrConstants.overcast)) {
     return Center(
       child: Image.asset(
         StrConstants.images[0],
-        width: MediaQuery.of(context).size.width * 40 / 100,
-        height: MediaQuery.of(context).size.height * 40 / 100,
+        width: width,
+        height: height,
       ),
     );
-  } else if (condition.contains("fog")) {
+  } else if (condition.contains(StrConstants.fog)) {
     return Center(
       child: Image.asset(
         StrConstants.images[1],
-        width: MediaQuery.of(context).size.width * 40 / 100,
-        height: MediaQuery.of(context).size.height * 40 / 100,
+        width: width,
+        height: height,
       ),
     );
-  } else if (condition.contains("rain")) {
+  } else if (condition.contains(StrConstants.rain)) {
     return Center(
       child: Image.asset(
         StrConstants.images[2],
-        width: MediaQuery.of(context).size.width * 40 / 100,
-        height: MediaQuery.of(context).size.height * 40 / 100,
+        width: width,
+        height: height,
       ),
     );
-  } else if (condition.contains("snow")) {
+  } else if (condition.contains(StrConstants.snow)) {
     return Center(
       child: Image.asset(
         StrConstants.images[3],
-        width: MediaQuery.of(context).size.width * 40 / 100,
-        height: MediaQuery.of(context).size.height * 40 / 100,
+        width: width,
+        height: height,
       ),
     );
-  } else if (condition.contains("sun")) {
+  } else if (condition.contains(StrConstants.sun)) {
     return Center(
       child: Image.asset(
         StrConstants.images[4],
-        width: MediaQuery.of(context).size.width * 40 / 100,
-        height: MediaQuery.of(context).size.height * 40 / 100,
+        width: width,
+        height: height,
       ),
     );
-  } else if (condition.contains("thunder") || condition.contains("light")) {
+  } else if (condition.contains(StrConstants.thunder) ||
+      condition.contains(StrConstants.light)) {
     return Center(
       child: Image.asset(
         StrConstants.images[5],
-        width: MediaQuery.of(context).size.width * 40 / 100,
-        height: MediaQuery.of(context).size.height * 40 / 100,
+        width: width,
+        height: height,
       ),
     );
   } else {
     return Center(
       child: Image.asset(
         StrConstants.images[6],
-        width: MediaQuery.of(context).size.width * 40 / 100,
-        height: MediaQuery.of(context).size.height * 40 / 100,
+        width: width,
+        height: height,
       ),
     );
   }
+}
+
+Column getWeatherWidget(BuildContext context, final Map<String, String> cityData, ValueNotifier<Icon> favIcon, Size size, double heightPadding){
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          Expanded(
+              child: Text(
+                cityData[StrConstants.locKeys[0]]!,
+                style: titleWhiteFontStyle,
+              )),
+          ValueListenableBuilder(
+              valueListenable: favIcon,
+              builder: (context, value, widget) {
+                return IconButton(
+                    onPressed: () {
+                      debugPrint("in onpressed");
+                      if (value.icon == Icons.favorite_border) {
+                        debugPrint("in fav border");
+                        favIcon.value = Icon(
+                          Icons.favorite,
+                          color: Colors.red,
+                          size: heightPadding,
+                        );
+                        CityWeatherDatabase.cityWeatherDBObj
+                            .deleteItem(cityData[
+                        StrConstants.locKeys[0]]!);
+                        cityData[StrConstants.isFavourite] =
+                            StrConstants.yes;
+                        CityWeatherDatabase.cityWeatherDBObj
+                            .createItem(cityData);
+                      } else {
+                        debugPrint("in fav");
+                        favIcon.value = Icon(
+                          Icons.favorite_border,
+                          color: Colors.red,
+                          size: heightPadding,
+                        );
+                        CityWeatherDatabase.cityWeatherDBObj
+                            .deleteItem(cityData[
+                        StrConstants.locKeys[0]]!);
+                        cityData[StrConstants.isFavourite] =
+                            StrConstants.no;
+                        CityWeatherDatabase.cityWeatherDBObj
+                            .createItem(cityData);
+                      }
+                    },
+                    icon: value);
+              }),
+        ],
+      ),
+      Text(
+        cityData[StrConstants.locKeys[1]]! +
+            StrConstants.separator +
+            cityData[StrConstants.locKeys[2]]!,
+        style: regionCountryFontStyle,
+      ),
+      sizedBoxH20,
+
+      Text(
+        cityData[StrConstants.currentKeys[2]]! +
+            StrConstants.separator +
+            cityData[StrConstants.currentKeys[0]]! +
+            StrConstants.degCelsius,
+        style: tempFontStyle,
+      ),
+      sizedBoxH20,
+
+      getImage(context, cityData[StrConstants.currentKeys[2]]!),
+      sizedBoxH20,
+
+      Row(
+        children: [
+          Column(
+            children: [
+              Row(
+                children: [
+                  Center(
+                    child: Text(
+                      StrConstants.realFeel,
+                      style: headerStyle,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Center(
+                    child: Text(
+                      cityData[StrConstants.currentKeys[8]]! +
+                          StrConstants.degCelsius,
+                      style: contentStyle,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          SizedBox(
+            width: size.width * 30 / 100,
+          ),
+          Column(
+            children: [
+              Center(
+                child: Text(
+                  StrConstants.humidity,
+                  style: headerStyle,
+                ),
+              ),
+              Center(
+                child: Text(
+                    cityData[StrConstants.currentKeys[6]]! +
+                        StrConstants.percentage,
+                    style: contentStyle),
+              ),
+            ],
+          )
+        ],
+      ),
+      sizedBoxH20,
+
+      Row(
+        children: [
+          Column(
+            children: [
+              Row(
+                children: [
+                  Center(
+                    child: Text(
+                      StrConstants.chancesOfRain,
+                      style: headerStyle,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Center(
+                    child: Text(
+                      cityData[StrConstants.currentKeys[7]]! +
+                          StrConstants.percentage,
+                      style: contentStyle,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          SizedBox(
+            width: size.width * 10 / 100,
+          ),
+          Column(
+            children: [
+              Center(
+                child: Text(
+                  StrConstants.pressure,
+                  style: headerStyle,
+                ),
+              ),
+              Center(
+                child: Text(
+                    cityData[StrConstants.currentKeys[5]]! +
+                        StrConstants.mbar,
+                    style: contentStyle),
+              ),
+            ],
+          )
+        ],
+      ),
+      sizedBoxH20,
+
+      Row(
+        children: [
+          Column(
+            children: [
+              Row(
+                children: [
+                  Center(
+                    child: Text(
+                      StrConstants.windSpeed,
+                      style: headerStyle,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Center(
+                    child: Text(
+                      cityData[StrConstants.currentKeys[4]]! +
+                          StrConstants.kph,
+                      style: contentStyle,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          SizedBox(
+            width: size.width * 20 / 100,
+          ),
+          Column(
+            children: [
+              Center(
+                child: Text(
+                  StrConstants.uv,
+                  style: headerStyle,
+                ),
+              ),
+              Center(
+                child: Text(
+                    cityData[StrConstants.currentKeys[9]]!,
+                    style: contentStyle),
+              ),
+            ],
+          )
+        ],
+      ),
+      sizedBoxH20,
+    ],
+  );
 }
